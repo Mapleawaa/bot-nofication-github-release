@@ -13,5 +13,25 @@
     "description": "GitHub Token（可选）",
     "type": "string",
     "hint": "用于提高 API 请求限制，可选"
+  },
+  "message_channel": {
+    "description": "消息发送渠道",
+    "type": "select",
+    "options": [
+      {
+        "label": "所有渠道",
+        "value": "all"
+      },
+      {
+        "label": "仅群聊",
+        "value": "group"
+      },
+      {
+        "label": "仅私聊",
+        "value": "private"
+      }
+    ],
+    "default": "all",
+    "hint": "选择消息发送的渠道"
   }
 }

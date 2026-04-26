@@ -1,0 +1,7 @@
+name: github_release_monitor
+display_name: GitHub Release 监控
+desc: 监控 GitHub 仓库 Release 更新的 AstrBot 插件，发现新 Release 时自动推送通知
+author: Your Name
+version: 1.0.0
+repo: ""
+

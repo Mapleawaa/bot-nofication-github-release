@@ -1,0 +1,30 @@
+{
+  "repo_owner": {
+    "description": "GitHub 仓库所有者",
+    "type": "string",
+    "hint": "例如：Soulter"
+  },
+  "repo_name": {
+    "description": "GitHub 仓库名称",
+    "type": "string",
+    "hint": "例如：AstrBot"
+  },
+  "check_interval": {
+    "description": "检查间隔（秒）",
+    "type": "int",
+    "default": 60,
+    "hint": "默认 60 秒检查一次"
+  },
+  "github_token": {
+    "description": "GitHub Token（可选）",
+    "type": "string",
+    "hint": "用于提高 API 请求限制，可选"
+  },
+  "broadcast_platform": {
+    "description": "广播平台",
+    "type": "string",
+    "default": "all",
+    "hint": "指定通知发送到哪些平台，默认为 all"
+  }
+}
+

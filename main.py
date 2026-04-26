@@ -7,11 +7,6 @@ import aiohttp
 from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent, filter
 from astrbot.api.star import Context, Star, register
-from astrbot.core.dashboard.dashboard_decorator import (
-    dashboard_router,
-    auth,
-    get_arg,
-)
 
 
 class GitHubReleaseMonitor:
@@ -113,8 +108,8 @@ class GitHubReleaseMonitor:
 @register(
     "github_release_monitor",
     "Your Name",
-    "监控 GitHub 仓库 Release 更新的 AstrBot 插件，支持Web界面手动检查和发送",
-    "2.0.0",
+    "监控 GitHub 仓库 Release 更新的 AstrBot 插件，支持手动检查和发送",
+    "2.1.0",
     "",
 )
 class GitHubReleaseMonitorPlugin(Star):
@@ -145,83 +140,85 @@ class GitHubReleaseMonitorPlugin(Star):
     async def terminate(self):
         logger.info("GitHub Release Monitor 插件已停止")
 
-    @dashboard_router.get("/github_release_monitor/api/status")
-    @auth
-    async def get_status(self):
+    @filter.command("github_release_check")
+    async def check_release_command(self, event: AstrMessageEvent):
+        """检查 GitHub Release 更新"""
         if not self.monitor:
-            return {"success": False, "message": "请先在插件配置中设置 repo_owner 和 repo_name"}
-        return {
-            "success": True,
-            "repo_owner": self.monitor.repo_owner,
-            "repo_name": self.monitor.repo_name,
-            "last_release_sha": self.monitor.last_release_sha or "未记录",
-            "message_template": self.monitor.message_template,
-            "latest_release": self.latest_release_data,
-        }
+            yield event.plain_result("请先在插件配置中设置 repo_owner 和 repo_name")
+            return
 
-    @dashboard_router.post("/github_release_monitor/api/check")
-    @auth
-    async def check_release(self):
-        if not self.monitor:
-            return {"success": False, "message": "请先在插件配置中设置 repo_owner 和 repo_name"}
-        
+        yield event.plain_result("正在检查最新 Release...")
         release_data = await self.monitor.check_release()
+        
         if not release_data:
-            return {"success": False, "message": "获取 Release 信息失败"}
-        
+            yield event.plain_result("获取 Release 信息失败")
+            return
+
         self.latest_release_data = release_data
-        rendered_message = self.monitor.render_message(release_data)
-        return {
-            "success": True,
-            "release": release_data,
-            "rendered_message": rendered_message,
-        }
+        message = self.monitor.render_message(release_data)
+        
+        status = "新 Release!" if release_data["is_new"] else "当前 Release"
+        yield event.plain_result(f"✅ 检查完成！\n状态: {status}\n版本: {release_data['release_name']}\nSHA: {release_data['current_sha']}\n\n消息预览: {message[:100]}...")
 
-    @dashboard_router.post("/github_release_monitor/api/update_template")
-    @auth
-    async def update_template(self):
+    @filter.command("github_release_send")
+    async def send_notification_command(self, event: AstrMessageEvent):
+        """发送 GitHub Release 通知"""
         if not self.monitor:
-            return {"success": False, "message": "请先在插件配置中设置 repo_owner 和 repo_name"}
-        
-        template = get_arg("template", str)
-        if not template:
-            return {"success": False, "message": "模板不能为空"}
-        
-        self.monitor.save_message_template(template)
-        return {"success": True, "message": "模板更新成功"}
+            yield event.plain_result("请先在插件配置中设置 repo_owner 和 repo_name")
+            return
 
-    @dashboard_router.post("/github_release_monitor/api/send")
-    @auth
-    async def send_notification(self):
-        if not self.monitor:
-            return {"success": False, "message": "请先在插件配置中设置 repo_owner 和 repo_name"}
-        
         if not self.latest_release_data:
-            return {"success": False, "message": "请先检查 Release 更新"}
-        
-        message = get_arg("message", str)
-        if not message:
-            message = self.monitor.render_message(self.latest_release_data)
+            yield event.plain_result("请先使用 github_release_check 检查 Release 更新")
+            return
+
+        message = self.monitor.render_message(self.latest_release_data)
         
         try:
-            # 直接使用上下文发送消息
-            if hasattr(self.context, 'send_message'):
-                await self.context.send_message(message)
-            else:
-                # 回退方案：记录消息但不发送
-                logger.info(f"通知内容: {message[:50]}...")
-            
+            yield event.plain_result(message)
             self.monitor.save_last_release_sha(self.latest_release_data["current_sha"])
             self.monitor.last_release_sha = self.latest_release_data["current_sha"]
-            return {"success": True, "message": "通知发送成功"}
+            yield event.plain_result("✅ 通知发送成功！")
         except Exception as e:
             logger.error(f"发送通知失败: {e}")
-            return {"success": False, "message": f"发送通知失败: {str(e)}"}
+            yield event.plain_result(f"❌ 发送通知失败: {str(e)}")
 
-    @dashboard_router.get("/github_release_monitor/")
-    @auth
-    async def get_dashboard_page(self):
-        return self.context.dashboard.render_template(
-            "github_release_monitor.html",
-            plugin=self,
+    @filter.command("github_release_template")
+    async def view_template_command(self, event: AstrMessageEvent):
+        """查看消息模板"""
+        if not self.monitor:
+            yield event.plain_result("请先在插件配置中设置 repo_owner 和 repo_name")
+            return
+
+        template = self.monitor.message_template
+        yield event.plain_result(f"📝 当前消息模板:\n\n{template}\n\n可用变量: {{repo_name}}, {{release_name}}, {{current_sha}}, {{release_body}}, {{release_url}}")
+
+    @filter.command("github_release_template_set")
+    async def set_template_command(self, event: AstrMessageEvent):
+        """设置消息模板，格式: github_release_template_set [模板内容]"""
+        if not self.monitor:
+            yield event.plain_result("请先在插件配置中设置 repo_owner 和 repo_name")
+            return
+
+        template = event.message.content.split(" ", 1)
+        if len(template) < 2:
+            yield event.plain_result("请提供模板内容，格式: github_release_template_set [模板内容]")
+            return
+
+        template_content = template[1]
+        self.monitor.save_message_template(template_content)
+        yield event.plain_result("✅ 模板设置成功！")
+
+    @filter.command("github_release_status")
+    async def status_command(self, event: AstrMessageEvent):
+        """查看监控状态"""
+        if not self.monitor:
+            yield event.plain_result("请先在插件配置中设置 repo_owner 和 repo_name")
+            return
+
+        status_msg = (
+            "📊 GitHub Release 监控状态\n"
+            f"仓库: {self.monitor.repo_owner}/{self.monitor.repo_name}\n"
+            f"最后记录 SHA: {self.monitor.last_release_sha or '未记录'}\n"
+            f"消息模板: {self.monitor.message_template[:50]}..."
         )
+        yield event.plain_result(status_msg)

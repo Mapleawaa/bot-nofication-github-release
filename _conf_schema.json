@@ -13,6 +13,5 @@
     "description": "GitHub Token（可选）",
     "type": "string",
     "hint": "用于提高 API 请求限制，可选"
-  },
-
+  }
 }

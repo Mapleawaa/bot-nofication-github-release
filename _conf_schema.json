@@ -14,24 +14,28 @@
     "type": "string",
     "hint": "用于提高 API 请求限制，可选"
   },
-  "message_channel": {
-    "description": "消息发送渠道",
+  "adapter_instance": {
+    "description": "机器人适配器实例",
     "type": "select",
     "options": [
       {
-        "label": "所有渠道",
+        "label": "所有适配器",
         "value": "all"
       },
       {
-        "label": "仅群聊",
-        "value": "group"
+        "label": "QQ",
+        "value": "qq"
       },
       {
-        "label": "仅私聊",
-        "value": "private"
+        "label": "微信",
+        "value": "wechat"
+      },
+      {
+        "label": "Telegram",
+        "value": "telegram"
       }
     ],
     "default": "all",
-    "hint": "选择消息发送的渠道"
+    "hint": "选择连接到的消息平台适配器"
   }
 }

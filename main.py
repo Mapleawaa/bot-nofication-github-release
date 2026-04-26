@@ -44,11 +44,15 @@ class GitHubReleaseMonitor:
                 data = json.load(f)
                 return data.get("template", "")
         default_template = (
-            "🎉 {repo_name} 有新 Release！\n"
-            "版本: {release_name}\n"
-            "SHA: {current_sha}\n\n"
+            "@全体成员 \n"
+            "[BOT] {repo_name} {release_name} 版本推送已完成\n\n"
             "{release_body}\n\n"
-            "查看详情: {release_url}"
+            "构建状态：\n"
+            "- Cloudflare Pages: ✅\n"
+            "- Github Release: ✅\n"
+            "- Pre-Test(真机测试): ✅\n\n"
+            "发布地址：`{release_url}`  \n"
+            "更新日志：`https://pve.u3u.icu/update`"
         )
         self.save_message_template(default_template)
         return default_template

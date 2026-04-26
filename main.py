@@ -130,7 +130,7 @@ class GitHubReleaseMonitorPlugin(Star):
         self._init_monitor()
 
     def _init_monitor(self):
-        config = self.context.config_helper.get_config()
+        config = self.config
         repo_owner = config.get("repo_owner")
         repo_name = config.get("repo_name")
         check_interval = config.get("check_interval", 60)
@@ -164,7 +164,7 @@ class GitHubReleaseMonitorPlugin(Star):
         if release_url:
             message += f"查看详情: {release_url}"
 
-        broadcast_platform = self.context.config_helper.get_config().get(
+        broadcast_platform = self.config.get(
             "broadcast_platform", "all"
         )
         await self._broadcast_message(message, broadcast_platform)

@@ -124,8 +124,9 @@ class GitHubReleaseMonitor:
     "",
 )
 class GitHubReleaseMonitorPlugin(Star):
-    def __init__(self, context: Context):
+    def __init__(self, context: Context, config=None):
         super().__init__(context)
+        self.config = config or {}
         self.monitor: Optional[GitHubReleaseMonitor] = None
         self._init_monitor()
 

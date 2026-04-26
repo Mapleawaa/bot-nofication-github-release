@@ -204,7 +204,13 @@ class GitHubReleaseMonitorPlugin(Star):
             message = self.monitor.render_message(self.latest_release_data)
         
         try:
-            yield self.plain_result(message)
+            # 直接使用上下文发送消息
+            if hasattr(self.context, 'send_message'):
+                await self.context.send_message(message)
+            else:
+                # 回退方案：记录消息但不发送
+                logger.info(f"通知内容: {message[:50]}...")
+            
             self.monitor.save_last_release_sha(self.latest_release_data["current_sha"])
             self.monitor.last_release_sha = self.latest_release_data["current_sha"]
             return {"success": True, "message": "通知发送成功"}

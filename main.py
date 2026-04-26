@@ -69,6 +69,12 @@ class GitHubReleaseMonitor:
                 async with session.get(self.api_url, headers=headers) as response:
                     if response.status == 200:
                         return await response.json()
+                    elif response.status == 404:
+                        logger.error(f"请求失败: 404 - 仓库 {self.repo_owner}/{self.repo_name} 不存在或没有 Release")
+                        return None
+                    elif response.status == 403:
+                        logger.error(f"请求失败: 403 - API 限制或 Token 无效")
+                        return None
                     else:
                         logger.error(f"请求失败: {response.status}")
                         return None
@@ -151,7 +157,7 @@ class GitHubReleaseMonitorPlugin(Star):
         release_data = await self.monitor.check_release()
         
         if not release_data:
-            yield event.plain_result("获取 Release 信息失败")
+            yield event.plain_result(f"获取 Release 信息失败，请检查：\n1. 仓库 {self.monitor.repo_owner}/{self.monitor.repo_name} 是否存在\n2. 仓库是否有 Release\n3. GitHub Token 是否有效（如果配置了）\n4. 网络连接是否正常")
             return
 
         self.latest_release_data = release_data

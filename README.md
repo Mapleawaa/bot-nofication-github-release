@@ -126,12 +126,15 @@ SHA: {current_sha}
 - 网络连接问题
 - GitHub API 限制
 - 仓库不存在
+- 仓库没有 Release
 - Token 无效
 
 **解决方案**：
 - 检查网络连接
 - 配置有效的 GitHub Token
 - 确认仓库路径正确
+- 选择一个有 Release 的仓库，或为当前仓库创建 Release
+- 测试配置：可以使用 `Microsoft/vscode` 等有 Release 的仓库来测试插件是否正常工作
 
 ### 2. 发送通知失败
 

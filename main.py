@@ -130,7 +130,6 @@ class GitHubReleaseMonitorPlugin(Star):
         repo_owner = self.config.get("repo_owner")
         repo_name = self.config.get("repo_name")
         github_token = self.config.get("github_token")
-        self.adapter_instance = self.config.get("adapter_instance", "all")
 
         if not repo_owner or not repo_name:
             logger.warning("请在插件配置中设置 repo_owner 和 repo_name")
@@ -226,7 +225,6 @@ class GitHubReleaseMonitorPlugin(Star):
             "📊 GitHub Release 监控状态\n"
             f"仓库: {self.monitor.repo_owner}/{self.monitor.repo_name}\n"
             f"最后记录 SHA: {self.monitor.last_release_sha or '未记录'}\n"
-            f"适配器实例: {self.adapter_instance}\n"
             f"消息模板: {self.monitor.message_template[:50]}..."
         )
         yield event.plain_result(status_msg)

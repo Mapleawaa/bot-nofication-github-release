@@ -14,28 +14,5 @@
     "type": "string",
     "hint": "用于提高 API 请求限制，可选"
   },
-  "adapter_instance": {
-    "description": "机器人适配器实例",
-    "type": "select",
-    "options": [
-      {
-        "label": "所有适配器",
-        "value": "all"
-      },
-      {
-        "label": "QQ",
-        "value": "qq"
-      },
-      {
-        "label": "微信",
-        "value": "wechat"
-      },
-      {
-        "label": "Telegram",
-        "value": "telegram"
-      }
-    ],
-    "default": "all",
-    "hint": "选择连接到的消息平台适配器"
-  }
+
 }
